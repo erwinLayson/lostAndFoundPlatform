@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SKSU Lost &amp; Found Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-badge {
+            transition: all 0.2s ease;
+        }
+        
+        .item-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="min-h-full bg-gray-50">
+  <div id="app" class="min-h-full"><!-- Header -->
+   <header class="bg-blue-900 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div class="flex justify-between items-center py-4">
+      <div class="flex items-center space-x-4">
+       <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center"><span class="text-blue-900 font-bold text-xl">🏛️</span>
+       </div>
+       <div>
+        <h1 id="platform-title" class="text-xl font-bold">SKSU Lost &amp; Found Platform</h1>
+        <p id="university-name" class="text-blue-200 text-sm">Sultan Kudarat State University</p>
+       </div>
+      </div>
+      <nav class="hidden md:flex space-x-6"><button onclick="showSection('home')" class="nav-btn text-blue-200 hover:text-white transition-colors">Home</button> <button onclick="showSection('report-found')" class="nav-btn text-blue-200 hover:text-white transition-colors">Report Found</button> <button onclick="showSection('report-lost')" class="nav-btn text-blue-200 hover:text-white transition-colors">Report Lost</button> <a href="admin.html" class="nav-btn text-blue-200 hover:text-white transition-colors">Admin</a>
+      </nav><button id="mobile-menu-btn" class="md:hidden text-white" onclick="toggleMobileMenu()"> <span class="text-2xl">☰</span> </button>
+     </div><!-- Mobile Menu -->
+     <div id="mobile-menu" class="hidden md:hidden pb-4">
+      <div class="flex flex-col space-y-2"><button onclick="showSection('home'); toggleMobileMenu()" class="text-left text-blue-200 hover:text-white py-2">Home</button> <button onclick="showSection('report-found'); toggleMobileMenu()" class="text-left text-blue-200 hover:text-white py-2">Report Found</button> <button onclick="showSection('report-lost'); toggleMobileMenu()" class="text-left text-blue-200 hover:text-white py-2">Report Lost</button> <a href="admin.html" class="text-left text-blue-200 hover:text-white py-2">Admin</a>
+      </div>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><!-- Home Section -->
+    <section id="home-section" class="section-content">
+     <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 mb-4">Find Your Lost Items</h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">Search through found items or report what you've lost or found. Our platform helps connect items with their rightful owners.</p>
+     </div><!-- Search Bar -->
+     <div class="max-w-3xl mx-auto mb-8">
+      <div class="bg-white rounded-lg shadow-md p-4">
+       <div class="relative mb-4"><input type="text" id="search-input" placeholder="Search for items (e.g., phone, keys, wallet...)" class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <span class="absolute left-4 top-3.5 text-gray-400 text-xl">🔍</span>
+       </div>
+       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <select id="home-category-filter" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500">
+         <option value="">All Categories</option>
+         <option value="Electronics">Electronics</option>
+         <option value="Bags">Bags & Backpacks</option>
+         <option value="Keys">Keys</option>
+         <option value="Clothing">Clothing</option>
+         <option value="Jewelry">Jewelry</option>
+         <option value="Documents">Documents/IDs</option>
+         <option value="Books">Books</option>
+         <option value="Other">Other</option>
+        </select>
+        <select id="home-location-filter" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500">
+         <option value="">All Locations</option>
+         <option value="Main Building">Main Building</option>
+         <option value="Library">Library</option>
+         <option value="Cafeteria">Cafeteria</option>
+         <option value="Gymnasium">Gymnasium</option>
+         <option value="Engineering Building">Engineering Building</option>
+         <option value="Science Building">Science Building</option>
+         <option value="Parking Area">Parking Area</option>
+         <option value="Dormitory">Dormitory</option>
+        </select>
+        <select id="home-status-filter" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500">
+         <option value="">All Status</option>
+         <option value="unclaimed">Unclaimed</option>
+         <option value="claimed">Claimed</option>
+         <option value="returned">Returned</option>
+        </select>
+        <button onclick="clearFilters()" class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors">Clear Filters</button>
+       </div>
+      </div>
+     </div><!-- Quick Actions -->
+     <div class="grid md:grid-cols-2 gap-6 mb-12">
+      <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow">
+       <div class="text-4xl mb-4">
+        📱
+       </div>
+       <h3 class="text-xl font-semibold mb-2">Found Something?</h3>
+       <p class="text-gray-600 mb-4">Help someone get their item back by reporting what you found.</p><button onclick="showSection('report-found')" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">Report Found Item</button>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow">
+       <div class="text-4xl mb-4">
+        🔍
+       </div>
+       <h3 class="text-xl font-semibold mb-2">Lost Something?</h3>
+       <p class="text-gray-600 mb-4">Report your lost item and we'll help you find it.</p><button onclick="showSection('report-lost')" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">Report Lost Item</button>
+      </div>
+     </div><!-- Recent Items -->
+     <div class="bg-white rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-semibold mb-4">Recent Found Items</h3>
+      <div id="recent-items" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"><!-- Items will be populated here -->
+      </div>
+     </div>
+    </section><!-- Report Found Section -->
+    <section id="report-found-section" class="section-content hidden">
+     <div class="max-w-2xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 mb-6">Report Found Item</h2>
+      <div class="bg-white rounded-lg shadow-md p-6">
+       <form id="found-item-form">
+        <div class="space-y-6">
+         <div><label for="found-title" class="block text-sm font-medium text-gray-700 mb-2">Item Title</label> <input type="text" id="found-title" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., iPhone 12, Blue Backpack, Car Keys">
+         </div>
+         <div><label for="found-category" class="block text-sm font-medium text-gray-700 mb-2">Category</label> <select id="found-category" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">Select category</option> <option value="Electronics">Electronics</option> <option value="Bags">Bags &amp; Backpacks</option> <option value="Keys">Keys</option> <option value="Clothing">Clothing</option> <option value="Jewelry">Jewelry</option> <option value="Documents">Documents/IDs</option> <option value="Books">Books</option> <option value="Other">Other</option> </select>
+         </div>
+         <div><label for="found-description" class="block text-sm font-medium text-gray-700 mb-2">Description</label> <textarea id="found-description" rows="4" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe the item in detail (color, brand, condition, etc.)"></textarea>
+         </div>
+         <div><label for="found-location" class="block text-sm font-medium text-gray-700 mb-2">Location Found</label> <select id="found-location" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">Select location</option> <option value="Main Building">Main Building</option> <option value="Library">Library</option> <option value="Cafeteria">Cafeteria</option> <option value="Gymnasium">Gymnasium</option> <option value="Engineering Building">Engineering Building</option> <option value="Science Building">Science Building</option> <option value="Parking Area">Parking Area</option> <option value="Dormitory">Dormitory</option> <option value="Other">Other</option> </select>
+         </div>
+         <div><label for="found-image" class="block text-sm font-medium text-gray-700 mb-2">Item Image <span class="text-red-500">*</span></label> <input type="file" id="found-image" accept="image/*" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <p class="text-xs text-gray-500 mt-1">Please upload a clear photo of the found item (Required)</p>
+          <div id="found-image-preview" class="mt-2 hidden"><img id="found-preview-img" src="" alt="Preview" class="max-w-full h-48 object-contain rounded-md border border-gray-300"></div>
+         </div>
+         <div><label for="found-reporter-name" class="block text-sm font-medium text-gray-700 mb-2">Your Name</label> <input type="text" id="found-reporter-name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter your full name">
+         </div>
+         <div><label for="found-contact" class="block text-sm font-medium text-gray-700 mb-2">Contact Information</label> <input type="text" id="found-contact" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Email or phone number">
+         </div><button type="submit" id="submit-found-btn" class="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors flex items-center justify-center"> <span id="submit-found-text">Submit Found Item</span>
+          <div id="submit-found-spinner" class="loading-spinner ml-2 hidden"></div></button>
+        </div>
+       </form>
+      </div>
+     </div>
+    </section><!-- Report Lost Section -->
+    <section id="report-lost-section" class="section-content hidden">
+     <div class="max-w-2xl mx-auto">
+      <h2 class="text-3xl font-bold text-gray-900 mb-6">Report Lost Item</h2>
+      <div class="bg-white rounded-lg shadow-md p-6">
+       <form id="lost-item-form">
+        <div class="space-y-6">
+         <div><label for="lost-title" class="block text-sm font-medium text-gray-700 mb-2">Item Title</label> <input type="text" id="lost-title" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., iPhone 12, Blue Backpack, Car Keys">
+         </div>
+         <div><label for="lost-category" class="block text-sm font-medium text-gray-700 mb-2">Category</label> <select id="lost-category" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">Select category</option> <option value="Electronics">Electronics</option> <option value="Bags">Bags &amp; Backpacks</option> <option value="Keys">Keys</option> <option value="Clothing">Clothing</option> <option value="Jewelry">Jewelry</option> <option value="Documents">Documents/IDs</option> <option value="Books">Books</option> <option value="Other">Other</option> </select>
+         </div>
+         <div><label for="lost-description" class="block text-sm font-medium text-gray-700 mb-2">Description</label> <textarea id="lost-description" rows="4" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe your lost item in detail (color, brand, condition, etc.)"></textarea>
+         </div>
+         <div><label for="lost-location" class="block text-sm font-medium text-gray-700 mb-2">Last Known Location</label> <select id="lost-location" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">Select location</option> <option value="Main Building">Main Building</option> <option value="Library">Library</option> <option value="Cafeteria">Cafeteria</option> <option value="Gymnasium">Gymnasium</option> <option value="Engineering Building">Engineering Building</option> <option value="Science Building">Science Building</option> <option value="Parking Area">Parking Area</option> <option value="Dormitory">Dormitory</option> <option value="Other">Other</option> </select>
+         </div>
+         <div><label for="lost-reporter-name" class="block text-sm font-medium text-gray-700 mb-2">Your Name</label> <input type="text" id="lost-reporter-name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter your full name">
+         </div>
+         <div><label for="lost-contact" class="block text-sm font-medium text-gray-700 mb-2">Contact Information</label> <input type="text" id="lost-contact" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Email or phone number">
+         </div><button type="submit" id="submit-lost-btn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center justify-center"> <span id="submit-lost-text">Submit Lost Item Report</span>
+          <div id="submit-lost-spinner" class="loading-spinner ml-2 hidden"></div></button>
+        </div>
+       </form>
+      </div>
+     </div>
+    </section>
+   </div><!-- Success Message -->
+   <div id="success-message" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden fade-in z-50">
+    <div class="flex items-center"><span class="mr-2">✅</span> <span id="success-text">Success!</span>
+    </div>
+   </div><!-- Error Message -->
+   <div id="error-message" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg hidden fade-in z-50">
+    <div class="flex items-center"><span class="mr-2">❌</span> <span id="error-text">Error occurred!</span>
+    </div>
+   </div><!-- Item Detail Modal -->
+   <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeModalOnBackdrop(event)">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+     <div class="p-6">
+      <div class="flex justify-between items-start mb-4">
+       <h2 id="modal-title" class="text-2xl font-bold text-gray-900"></h2>
+       <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      <div id="modal-content" class="space-y-4">
+       <!-- Content will be populated dynamically -->
+      </div>
+      <div class="mt-6 flex justify-end space-x-3">
+       <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Close</button>
+       <button id="modal-action-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors hidden">Contact Reporter</button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Global variables
+        let currentData = [];
+        let filteredData = [];
+        let currentSection = 'home';
+        const STORAGE_KEY = 'lostFoundItems';
+
+        // Default configuration
+        const defaultConfig = {
+            platform_title: "SKSU Lost & Found Platform",
+            university_name: "Sultan Kudarat State University",
+            admin_contact: "security@sksu.edu.ph",
+            office_location: "Security Office, Main Building"
+        };
+
+        // LocalStorage fallback functions
+        function loadFromLocalStorage() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                return stored ? JSON.parse(stored) : [];
+            } catch (error) {
+                console.error("Error loading from localStorage:", error);
+                return [];
+            }
+        }
+
+        function saveToLocalStorage(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                return true;
+            } catch (error) {
+                console.error("Error saving to localStorage:", error);
+                return false;
+            }
+        }
+
+        function createItem(itemData) {
+            currentData.push(itemData);
+            saveToLocalStorage(currentData);
+            filteredData = currentData;
+            updateUI();
+            return { isOk: true };
+        }
+
+        function updateItem(updatedItem) {
+            const index = currentData.findIndex(item => item.id === updatedItem.id);
+            if (index !== -1) {
+                currentData[index] = updatedItem;
+                saveToLocalStorage(currentData);
+                filteredData = currentData;
+                updateUI();
+                return { isOk: true };
+            }
+            return { isOk: false };
+        }
+
+        function deleteItemById(itemToDelete) {
+            currentData = currentData.filter(item => item.id !== itemToDelete.id);
+            saveToLocalStorage(currentData);
+            filteredData = currentData;
+            updateUI();
+            return { isOk: true };
+        }
+
+        // Initialize app
+        function initializeApp() {
+            try {
+                // Use localStorage for data persistence
+                console.log("Using localStorage for data persistence");
+                currentData = loadFromLocalStorage();
+                filteredData = currentData;
+                updateUI();
+            } catch (error) {
+                console.error("Error initializing app:", error);
+                // Fallback to empty array on error
+                currentData = [];
+                filteredData = [];
+                updateUI();
+            }
+        }
+
+        // Navigation functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            currentSection = sectionName;
+            
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-white');
+                btn.classList.add('text-blue-200');
+            });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Image preview handler
+        function initializeImagePreview() {
+            const imageInput = document.getElementById('found-image');
+            const previewDiv = document.getElementById('found-image-preview');
+            const previewImg = document.getElementById('found-preview-img');
+            
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        previewImg.src = event.target.result;
+                        previewDiv.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewDiv.classList.add('hidden');
+                }
+            });
+        }
+
+        // Form submission functions - Initialize after DOM loads
+        function initializeFormListeners() {
+            // Found Item Form
+            document.getElementById('found-item-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (currentData.length >= 999) {
+                showMessage("Maximum limit of 999 items reached. Please contact admin.", 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-found-btn');
+            const submitText = document.getElementById('submit-found-text');
+            const submitSpinner = document.getElementById('submit-found-spinner');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.textContent = 'Submitting...';
+            submitSpinner.classList.remove('hidden');
+            
+            try {
+                // Get image file
+                const imageFile = document.getElementById('found-image').files[0];
+                if (!imageFile) {
+                    showMessage('Please upload an image of the item', 'error');
+                    submitBtn.disabled = false;
+                    submitText.textContent = 'Submit Found Item';
+                    submitSpinner.classList.add('hidden');
+                    return;
+                }
+                
+                // Convert image to base64
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    const itemData = {
+                        id: generateId(),
+                        type: 'found',
+                        title: document.getElementById('found-title').value,
+                        description: document.getElementById('found-description').value,
+                        location: document.getElementById('found-location').value,
+                        category: document.getElementById('found-category').value,
+                        reporter_name: document.getElementById('found-reporter-name').value,
+                        contact_info: document.getElementById('found-contact').value,
+                        image: event.target.result,
+                        status: 'unclaimed',
+                        date_reported: new Date().toLocaleDateString(),
+                        created_at: new Date().toISOString()
+                    };
+
+                    let result;
+                    if (window.dataSdk) {
+                        result = await window.dataSdk.create(itemData);
+                    } else {
+                        // Use localStorage fallback
+                        result = createItem(itemData);
+                    }
+                    
+                    if (result.isOk) {
+                        showMessage('Found item reported successfully!', 'success');
+                        document.getElementById('found-item-form').reset();
+                        document.getElementById('found-image-preview').classList.add('hidden');
+                        showSection('home');
+                    } else {
+                        showMessage('Failed to submit item. Please try again.', 'error');
+                    }
+                    
+                    // Reset loading state
+                    submitBtn.disabled = false;
+                    submitText.textContent = 'Submit Found Item';
+                    submitSpinner.classList.add('hidden');
+                };
+                
+                reader.onerror = function() {
+                    showMessage('Failed to read image file. Please try again.', 'error');
+                    submitBtn.disabled = false;
+                    submitText.textContent = 'Submit Found Item';
+                    submitSpinner.classList.add('hidden');
+                };
+                
+                reader.readAsDataURL(imageFile);
+            } catch (error) {
+                showMessage('An error occurred. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitText.textContent = 'Submit Found Item';
+                submitSpinner.classList.add('hidden');
+            }
+            });
+
+            // Lost Item Form
+            document.getElementById('lost-item-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (currentData.length >= 999) {
+                showMessage("Maximum limit of 999 items reached. Please contact admin.", 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-lost-btn');
+            const submitText = document.getElementById('submit-lost-text');
+            const submitSpinner = document.getElementById('submit-lost-spinner');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.textContent = 'Submitting...';
+            submitSpinner.classList.remove('hidden');
+            
+            try {
+                const itemData = {
+                    id: generateId(),
+                    type: 'lost',
+                    title: document.getElementById('lost-title').value,
+                    description: document.getElementById('lost-description').value,
+                    location: document.getElementById('lost-location').value,
+                    category: document.getElementById('lost-category').value,
+                    reporter_name: document.getElementById('lost-reporter-name').value,
+                    contact_info: document.getElementById('lost-contact').value,
+                    status: 'unclaimed',
+                    date_reported: new Date().toLocaleDateString(),
+                    created_at: new Date().toISOString()
+                };
+
+                let result;
+                if (window.dataSdk) {
+                    result = await window.dataSdk.create(itemData);
+                } else {
+                    // Use localStorage fallback
+                    result = createItem(itemData);
+                }
+                
+                if (result.isOk) {
+                    showMessage('Lost item report submitted successfully!', 'success');
+                    document.getElementById('lost-item-form').reset();
+                    showSection('home');
+                } else {
+                    showMessage('Failed to submit report. Please try again.', 'error');
+                }
+            } catch (error) {
+                showMessage('An error occurred. Please try again.', 'error');
+            } finally {
+                // Reset loading state
+                submitBtn.disabled = false;
+                submitText.textContent = 'Submit Lost Item Report';
+                submitSpinner.classList.add('hidden');
+            }
+            });
+
+            // Search functionality
+            document.getElementById('search-input').addEventListener('input', applyHomeFilters);
+            document.getElementById('home-category-filter').addEventListener('change', applyHomeFilters);
+            document.getElementById('home-location-filter').addEventListener('change', applyHomeFilters);
+            document.getElementById('home-status-filter').addEventListener('change', applyHomeFilters);
+        }
+
+        function applyHomeFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('home-category-filter').value;
+            const locationFilter = document.getElementById('home-location-filter').value;
+            const statusFilter = document.getElementById('home-status-filter').value;
+            
+            filteredData = currentData.filter(item => {
+                const matchesSearch = !searchTerm || 
+                    item.title.toLowerCase().includes(searchTerm) ||
+                    item.description.toLowerCase().includes(searchTerm) ||
+                    item.category.toLowerCase().includes(searchTerm) ||
+                    item.location.toLowerCase().includes(searchTerm);
+                
+                const matchesCategory = !categoryFilter || item.category === categoryFilter;
+                const matchesLocation = !locationFilter || item.location === locationFilter;
+                const matchesStatus = !statusFilter || item.status === statusFilter;
+                
+                return matchesSearch && matchesCategory && matchesLocation && matchesStatus;
+            });
+            
+            updateRecentItems();
+        }
+
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('home-category-filter').value = '';
+            document.getElementById('home-location-filter').value = '';
+            document.getElementById('home-status-filter').value = '';
+            applyHomeFilters();
+        }
+
+        // UI update functions
+        function updateUI() {
+            updateRecentItems();
+        }
+
+        function updateRecentItems() {
+            const container = document.getElementById('recent-items');
+            const recentItems = filteredData
+                .filter(item => item.type === 'found')
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 6);
+            
+            if (recentItems.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No items found matching your filters.</div>';
+                return;
+            }
+            
+            container.innerHTML = recentItems.map(item => `
+                <div class="item-card bg-gray-50 rounded-lg p-4 border border-gray-200 cursor-pointer" onclick='openItemModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>
+                    ${item.image ? `<img src="${item.image}" alt="${escapeHtml(item.title)}" class="w-full h-32 object-cover rounded-md mb-3">` : ''}
+                    <div class="flex items-start justify-between mb-2">
+                        <h4 class="font-semibold text-gray-900">${escapeHtml(item.title)}</h4>
+                        <span class="status-badge px-2 py-1 text-xs rounded-full ${getStatusColor(item.status)}">${item.status}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">${escapeHtml(item.description.substring(0, 100))}${item.description.length > 100 ? '...' : ''}</p>
+                    <div class="flex justify-between items-center text-xs text-gray-500 mb-2">
+                        <span>📍 ${escapeHtml(item.location)}</span>
+                        <span>${item.date_reported}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-gray-500">📦 ${escapeHtml(item.category)}</span>
+                        <span class="text-blue-600 hover:text-blue-800 font-medium">View Details →</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Utility functions
+        function generateId() {
+            return 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'unclaimed': return 'bg-yellow-100 text-yellow-800';
+                case 'claimed': return 'bg-blue-100 text-blue-800';
+                case 'returned': return 'bg-green-100 text-green-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getTypeColor(type) {
+            switch (type) {
+                case 'found': return 'bg-green-100 text-green-800';
+                case 'lost': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageEl = document.getElementById(type + '-message');
+            const textEl = document.getElementById(type + '-text');
+            
+            textEl.textContent = message;
+            messageEl.classList.remove('hidden');
+            
+            setTimeout(() => {
+                messageEl.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Modal functions
+        function openItemModal(item) {
+            const modal = document.getElementById('item-modal');
+            const title = document.getElementById('modal-title');
+            const content = document.getElementById('modal-content');
+            
+            title.textContent = item.title;
+            
+            const statusColor = getStatusColor(item.status);
+            const typeColor = getTypeColor(item.type);
+            
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3 py-1 text-sm rounded-full ${typeColor} font-medium">${item.type.toUpperCase()}</span>
+                        <span class="px-3 py-1 text-sm rounded-full ${statusColor} font-medium">${item.status.toUpperCase()}</span>
+                    </div>
+                    
+                    ${item.image ? `
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2">📷 Item Photo</h3>
+                            <img src="${item.image}" alt="${escapeHtml(item.title)}" class="w-full max-h-96 object-contain rounded-md border border-gray-300">
+                        </div>
+                    ` : ''}
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2">Description</h3>
+                        <p class="text-gray-700">${escapeHtml(item.description)}</p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2">📦 Category</h3>
+                            <p class="text-gray-700">${escapeHtml(item.category)}</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2">📍 Location</h3>
+                            <p class="text-gray-700">${escapeHtml(item.location)}</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2">📅 Date Reported</h3>
+                            <p class="text-gray-700">${item.date_reported}</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2">👤 Reporter</h3>
+                            <p class="text-gray-700">${escapeHtml(item.reporter_name)}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2">📞 Contact Information</h3>
+                        <p class="text-gray-700">${escapeHtml(item.contact_info)}</p>
+                        <p class="text-xs text-gray-500 mt-2">Please contact the reporter if this is your item or if you have information about it.</p>
+                    </div>
+                    
+                    ${findPotentialMatches(item).length > 0 ? `
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-900 mb-3">🔍 Potential Matches</h3>
+                            <p class="text-sm text-gray-600 mb-3">These items might be related:</p>
+                            <div class="space-y-2">
+                                ${findPotentialMatches(item).map(match => `
+                                    <div class="bg-white p-3 rounded border border-yellow-300 cursor-pointer hover:bg-yellow-50" onclick='openItemModal(${JSON.stringify(match).replace(/'/g, "&#39;")})'>
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <p class="font-medium text-gray-900">${escapeHtml(match.title)}</p>
+                                                <p class="text-xs text-gray-600">${escapeHtml(match.description.substring(0, 80))}...</p>
+                                                <p class="text-xs text-gray-500 mt-1">📍 ${escapeHtml(match.location)} • ${match.date_reported}</p>
+                                            </div>
+                                            <span class="px-2 py-1 text-xs rounded-full ${getTypeColor(match.type)}">${match.type}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('item-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target.id === 'item-modal') {
+                closeModal();
+            }
+        }
+
+        // Find potential matches between lost and found items
+        function findPotentialMatches(item) {
+            if (!item) return [];
+            
+            return currentData.filter(otherItem => {
+                if (otherItem.id === item.id) return false;
+                if (otherItem.type === item.type) return false; // Only match lost with found
+                
+                const titleMatch = otherItem.title.toLowerCase().includes(item.title.toLowerCase().split(' ')[0]) ||
+                                  item.title.toLowerCase().includes(otherItem.title.toLowerCase().split(' ')[0]);
+                const categoryMatch = otherItem.category === item.category;
+                const locationMatch = otherItem.location === item.location;
+                
+                // Calculate match score
+                let score = 0;
+                if (titleMatch) score += 3;
+                if (categoryMatch) score += 2;
+                if (locationMatch) score += 1;
+                
+                return score >= 3; // Require at least title + category match
+            }).slice(0, 3); // Return top 3 matches
+        }
+
+        // Utility to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            initializeFormListeners();
+            initializeImagePreview();
+        });
+    </script>
+</body>
+</html>

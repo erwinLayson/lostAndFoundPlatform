@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - SKSU Lost & Found</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .status-badge {
+      transition: all 0.2s ease;
+    }
+    
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <div id="app" class="min-h-screen">
+    
+    <!-- Login Section -->
+    <div id="login-section" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 to-blue-700 px-4">
+      <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-yellow-500 text-3xl">🏛️</span>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900">Admin Login</h1>
+          <p class="text-gray-600 mt-2">SKSU Lost & Found Platform</p>
+        </div>
+        
+        <form id="login-form" class="space-y-6">
+          <div>
+            <label for="admin-username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <input type="text" id="admin-username" required 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter your username">
+          </div>
+          
+          <div>
+            <label for="admin-password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input type="password" id="admin-password" required 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter your password">
+          </div>
+          
+          <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            Invalid username or password
+          </div>
+          
+          <button type="submit" id="login-btn"
+                  class="w-full bg-blue-900 text-white py-3 px-4 rounded-lg hover:bg-blue-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium flex items-center justify-center">
+            <span id="login-text">Sign In</span>
+            <div id="login-spinner" class="loading-spinner ml-2 hidden"></div>
+          </button>
+        </form>
+        
+        <div class="mt-6 text-center">
+          <a href="index.html" class="text-blue-900 hover:text-blue-700 text-sm font-medium">← Back to Home</a>
+        </div>
+        
+        <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+          <p class="text-xs text-gray-600 text-center">
+            <strong>Default Credentials:</strong><br>
+            Username: admin<br>
+            Password: admin123
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard Section -->
+    <div id="dashboard-section" class="hidden">
+      <!-- Header -->
+      <header class="bg-blue-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center py-4">
+            <div class="flex items-center space-x-4">
+              <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
+                <span class="text-blue-900 font-bold text-xl">🏛️</span>
+              </div>
+              <div>
+                <h1 class="text-xl font-bold">Admin Dashboard</h1>
+                <p class="text-blue-200 text-sm">SKSU Lost & Found Platform</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-4">
+              <span class="text-blue-200 text-sm hidden md:block">Welcome, <span id="admin-user">Admin</span></span>
+              <button onclick="openSettingsModal()" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                ⚙️ Settings
+              </button>
+              <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="mb-6">
+          <h2 class="text-3xl font-bold text-gray-900 mb-4">Dashboard Overview</h2>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+              <span class="text-blue-600 text-xl mr-2">ℹ️</span>
+              <div>
+                <p class="text-blue-800 font-medium">Admin Contact</p>
+                <p class="text-blue-600">security@sksu.edu.ph</p>
+                <p class="text-blue-600 text-sm">Security Office, Main Building</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="grid md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="text-3xl font-bold text-blue-600" id="total-items">0</div>
+            <div class="text-gray-600 mt-2">Total Items</div>
+          </div>
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="text-3xl font-bold text-green-600" id="found-items">0</div>
+            <div class="text-gray-600 mt-2">Found Items</div>
+          </div>
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="text-3xl font-bold text-orange-600" id="lost-reports">0</div>
+            <div class="text-gray-600 mt-2">Lost Reports</div>
+          </div>
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="text-3xl font-bold text-purple-600" id="claimed-items">0</div>
+            <div class="text-gray-600 mt-2">Claimed Items</div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+          <div class="grid md:grid-cols-5 gap-4">
+            <select id="filter-type" class="px-3 py-2 border border-gray-300 rounded-md">
+              <option value="">All Types</option>
+              <option value="found">Found Items</option>
+              <option value="lost">Lost Reports</option>
+            </select>
+            <select id="filter-status" class="px-3 py-2 border border-gray-300 rounded-md">
+              <option value="">All Status</option>
+              <option value="unclaimed">Unclaimed</option>
+              <option value="claimed">Claimed</option>
+              <option value="returned">Returned</option>
+            </select>
+            <select id="filter-category" class="px-3 py-2 border border-gray-300 rounded-md">
+              <option value="">All Categories</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Bags">Bags & Backpacks</option>
+              <option value="Keys">Keys</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Jewelry">Jewelry</option>
+              <option value="Documents">Documents/IDs</option>
+              <option value="Books">Books</option>
+              <option value="Other">Other</option>
+            </select>
+            <button onclick="applyFilters()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+              Apply Filters
+            </button>
+            <button onclick="exportDataAsCSV()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+              📥 Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Items List -->
+        <div class="bg-white rounded-lg shadow-md">
+          <div class="p-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold">All Items</h3>
+          </div>
+          <div id="admin-items-list" class="divide-y divide-gray-200">
+            <!-- Items will be populated here -->
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div id="success-message" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden fade-in z-50">
+    <div class="flex items-center">
+      <span class="mr-2">✅</span>
+      <span id="success-text">Success!</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div id="error-message" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg hidden fade-in z-50">
+    <div class="flex items-center">
+      <span class="mr-2">❌</span>
+      <span id="error-text">Error occurred!</span>
+    </div>
+  </div>
+
+  <!-- Item Detail Modal -->
+  <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeModalOnBackdrop(event)">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="p-6">
+        <div class="flex justify-between items-start mb-4">
+          <h2 id="modal-title" class="text-2xl font-bold text-gray-900"></h2>
+          <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        <div id="modal-content" class="space-y-4">
+          <!-- Content will be populated dynamically -->
+        </div>
+        <div class="mt-6 flex justify-end space-x-3">
+          <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeSettingsModalOnBackdrop(event)">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" onclick="event.stopPropagation()">
+      <div class="p-6">
+        <div class="flex justify-between items-start mb-6">
+          <h2 class="text-2xl font-bold text-gray-900">⚙️ Admin Settings</h2>
+          <button onclick="closeSettingsModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        
+        <form id="settings-form" class="space-y-6">
+          <div>
+            <label for="new-username" class="block text-sm font-medium text-gray-700 mb-2">New Username</label>
+            <input type="text" id="new-username" required minlength="3"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter new username">
+            <p class="text-xs text-gray-500 mt-1">Minimum 3 characters</p>
+          </div>
+          
+          <div>
+            <label for="current-password" class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+            <input type="password" id="current-password" required
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter current password">
+          </div>
+          
+          <div>
+            <label for="new-password" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+            <input type="password" id="new-password" required minlength="6"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter new password">
+            <p class="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+          </div>
+          
+          <div>
+            <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+            <input type="password" id="confirm-password" required
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Confirm new password">
+          </div>
+          
+          <div id="settings-error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"></div>
+          
+          <div class="flex justify-end space-x-3">
+            <button type="button" onclick="closeSettingsModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" id="save-settings-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center">
+              <span id="save-settings-text">Save Changes</span>
+              <div id="save-settings-spinner" class="loading-spinner ml-2 hidden"></div>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentData = [];
+    let filteredData = [];
+    const STORAGE_KEY = 'lostFoundItems';
+    const ADMIN_KEY = 'adminLoggedIn';
+    const ADMIN_CREDS_KEY = 'adminCredentials';
+
+    // Default admin credentials (in production, this should be server-side)
+    const DEFAULT_CREDENTIALS = {
+      username: 'admin',
+      password: 'admin123'
+    };
+
+    // Get admin credentials from localStorage or use defaults
+    function getAdminCredentials() {
+      const stored = localStorage.getItem(ADMIN_CREDS_KEY);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          return DEFAULT_CREDENTIALS;
+        }
+      }
+      return DEFAULT_CREDENTIALS;
+    }
+
+    // Save admin credentials to localStorage
+    function saveAdminCredentials(username, password) {
+      const credentials = { username, password };
+      localStorage.setItem(ADMIN_CREDS_KEY, JSON.stringify(credentials));
+      return true;
+    }
+
+    // LocalStorage functions
+    function loadFromLocalStorage() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        console.error("Error loading from localStorage:", error);
+        return [];
+      }
+    }
+
+    function saveToLocalStorage(data) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        return true;
+      } catch (error) {
+        console.error("Error saving to localStorage:", error);
+        return false;
+      }
+    }
+
+    function updateItem(updatedItem) {
+      const index = currentData.findIndex(item => item.id === updatedItem.id);
+      if (index !== -1) {
+        currentData[index] = updatedItem;
+        saveToLocalStorage(currentData);
+        filteredData = currentData;
+        updateUI();
+        updateStatistics();
+        return { isOk: true };
+      }
+      return { isOk: false };
+    }
+
+    function deleteItemById(itemToDelete) {
+      currentData = currentData.filter(item => item.id !== itemToDelete.id);
+      saveToLocalStorage(currentData);
+      filteredData = currentData;
+      updateUI();
+      updateStatistics();
+      return { isOk: true };
+    }
+
+    // Authentication functions
+    function checkAuth() {
+      const isLoggedIn = sessionStorage.getItem(ADMIN_KEY);
+      if (isLoggedIn === 'true') {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+    }
+
+    function showLogin() {
+      document.getElementById('login-section').classList.remove('hidden');
+      document.getElementById('dashboard-section').classList.add('hidden');
+    }
+
+    function showDashboard() {
+      document.getElementById('login-section').classList.add('hidden');
+      document.getElementById('dashboard-section').classList.remove('hidden');
+      loadData();
+    }
+
+    function logout() {
+      sessionStorage.removeItem(ADMIN_KEY);
+      showLogin();
+      showMessage('Logged out successfully', 'success');
+    }
+
+    // Login form handler
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('admin-username').value;
+      const password = document.getElementById('admin-password').value;
+      const loginBtn = document.getElementById('login-btn');
+      const loginText = document.getElementById('login-text');
+      const loginSpinner = document.getElementById('login-spinner');
+      const loginError = document.getElementById('login-error');
+      
+      // Hide error
+      loginError.classList.add('hidden');
+      
+      // Show loading
+      loginBtn.disabled = true;
+      loginText.textContent = 'Signing in...';
+      loginSpinner.classList.remove('hidden');
+      
+      // Get current admin credentials
+      const adminCreds = getAdminCredentials();
+      
+      // Simulate authentication delay
+      setTimeout(() => {
+        if (username === adminCreds.username && password === adminCreds.password) {
+          sessionStorage.setItem(ADMIN_KEY, 'true');
+          sessionStorage.setItem('adminUsername', username);
+          showDashboard();
+          showMessage('Login successful!', 'success');
+        } else {
+          loginError.classList.remove('hidden');
+        }
+        
+        // Reset button
+        loginBtn.disabled = false;
+        loginText.textContent = 'Sign In';
+        loginSpinner.classList.add('hidden');
+      }, 1000);
+    });
+
+    // Load data
+    function loadData() {
+      currentData = loadFromLocalStorage();
+      filteredData = currentData;
+      updateUI();
+      updateStatistics();
+      
+      const adminUsername = sessionStorage.getItem('adminUsername') || 'Admin';
+      document.getElementById('admin-user').textContent = adminUsername;
+    }
+
+    // Filter functions
+    function applyFilters() {
+      const typeFilter = document.getElementById('filter-type').value;
+      const statusFilter = document.getElementById('filter-status').value;
+      const categoryFilter = document.getElementById('filter-category').value;
+      
+      filteredData = currentData.filter(item => {
+        return (!typeFilter || item.type === typeFilter) &&
+               (!statusFilter || item.status === statusFilter) &&
+               (!categoryFilter || item.category === categoryFilter);
+      });
+      
+      updateAdminItemsList();
+    }
+
+    async function updateItemStatus(item, newStatus) {
+      try {
+        const updatedItem = { ...item, status: newStatus };
+        const result = updateItem(updatedItem);
+        
+        if (result.isOk) {
+          showMessage(`Item status updated to ${newStatus}`, 'success');
+        } else {
+          showMessage('Failed to update item status', 'error');
+        }
+      } catch (error) {
+        showMessage('Error updating item status', 'error');
+      }
+    }
+
+    async function deleteItem(item) {
+      try {
+        const result = deleteItemById(item);
+        
+        if (result.isOk) {
+          showMessage('Item deleted successfully', 'success');
+        } else {
+          showMessage('Failed to delete item', 'error');
+        }
+      } catch (error) {
+        showMessage('Error deleting item', 'error');
+      }
+    }
+
+    // UI update functions
+    function updateUI() {
+      updateAdminItemsList();
+    }
+
+    function updateAdminItemsList() {
+      const container = document.getElementById('admin-items-list');
+      
+      if (filteredData.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-gray-500">No items found.</div>';
+        return;
+      }
+      
+      const sortedData = [...filteredData].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      container.innerHTML = sortedData.map(item => `
+        <div class="p-4 hover:bg-gray-50 transition-colors">
+          <div class="flex justify-between items-start">
+            <div class="flex-1 cursor-pointer" onclick='openItemModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>
+              <div class="flex items-center space-x-2 mb-2">
+                <h4 class="font-semibold text-gray-900">${escapeHtml(item.title)}</h4>
+                <span class="px-2 py-1 text-xs rounded-full ${getTypeColor(item.type)}">${item.type}</span>
+                <span class="status-badge px-2 py-1 text-xs rounded-full ${getStatusColor(item.status)}">${item.status}</span>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">${escapeHtml(item.description)}</p>
+              <div class="grid grid-cols-2 gap-4 text-xs text-gray-500">
+                <div>📍 Location: ${escapeHtml(item.location)}</div>
+                <div>📅 Date: ${item.date_reported}</div>
+                <div>📦 Category: ${escapeHtml(item.category)}</div>
+                <div>👤 Reporter: ${escapeHtml(item.reporter_name)}</div>
+                <div>📞 Contact: ${escapeHtml(item.contact_info)}</div>
+              </div>
+            </div>
+            <div class="flex flex-col space-y-2 ml-4">
+              <button onclick='openItemModal(${JSON.stringify(item).replace(/'/g, "&#39;")})' 
+                      class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 whitespace-nowrap">View Details</button>
+              ${item.status === 'unclaimed' ? `
+                <button onclick='confirmStatusUpdate(${JSON.stringify(item).replace(/'/g, "&#39;")}, "claimed")' 
+                        class="px-3 py-1 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700 whitespace-nowrap">Mark Claimed</button>
+              ` : ''}
+              ${item.status === 'claimed' ? `
+                <button onclick='confirmStatusUpdate(${JSON.stringify(item).replace(/'/g, "&#39;")}, "returned")' 
+                        class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 whitespace-nowrap">Mark Returned</button>
+              ` : ''}
+              ${item.status === 'returned' ? `
+                <button onclick='confirmStatusUpdate(${JSON.stringify(item).replace(/'/g, "&#39;")}, "unclaimed")' 
+                        class="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 whitespace-nowrap">Reopen</button>
+              ` : ''}
+              <button onclick='confirmDelete(${JSON.stringify(item).replace(/'/g, "&#39;")})' 
+                      class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 whitespace-nowrap">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStatistics() {
+      const totalItems = currentData.length;
+      const foundItems = currentData.filter(item => item.type === 'found').length;
+      const lostReports = currentData.filter(item => item.type === 'lost').length;
+      const claimedItems = currentData.filter(item => item.status === 'claimed' || item.status === 'returned').length;
+      
+      document.getElementById('total-items').textContent = totalItems;
+      document.getElementById('found-items').textContent = foundItems;
+      document.getElementById('lost-reports').textContent = lostReports;
+      document.getElementById('claimed-items').textContent = claimedItems;
+    }
+
+    // Utility functions
+    function getStatusColor(status) {
+      switch (status) {
+        case 'unclaimed': return 'bg-yellow-100 text-yellow-800';
+        case 'claimed': return 'bg-blue-100 text-blue-800';
+        case 'returned': return 'bg-green-100 text-green-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    function getTypeColor(type) {
+      switch (type) {
+        case 'found': return 'bg-green-100 text-green-800';
+        case 'lost': return 'bg-red-100 text-red-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showMessage(message, type) {
+      const messageEl = document.getElementById(type + '-message');
+      const textEl = document.getElementById(type + '-text');
+      
+      textEl.textContent = message;
+      messageEl.classList.remove('hidden');
+      
+      setTimeout(() => {
+        messageEl.classList.add('hidden');
+      }, 5000);
+    }
+
+    // Modal functions
+    function openItemModal(item) {
+      const modal = document.getElementById('item-modal');
+      const title = document.getElementById('modal-title');
+      const content = document.getElementById('modal-content');
+      
+      title.textContent = item.title;
+      
+      const statusColor = getStatusColor(item.status);
+      const typeColor = getTypeColor(item.type);
+      
+      content.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center space-x-2">
+            <span class="px-3 py-1 text-sm rounded-full ${typeColor} font-medium">${item.type.toUpperCase()}</span>
+            <span class="px-3 py-1 text-sm rounded-full ${statusColor} font-medium">${item.status.toUpperCase()}</span>
+          </div>
+          
+          <div class="bg-gray-50 rounded-lg p-4">
+            <h3 class="font-semibold text-gray-900 mb-2">Description</h3>
+            <p class="text-gray-700">${escapeHtml(item.description)}</p>
+          </div>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h3 class="font-semibold text-gray-900 mb-2">📦 Category</h3>
+              <p class="text-gray-700">${escapeHtml(item.category)}</p>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h3 class="font-semibold text-gray-900 mb-2">📍 Location</h3>
+              <p class="text-gray-700">${escapeHtml(item.location)}</p>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h3 class="font-semibold text-gray-900 mb-2">📅 Date Reported</h3>
+              <p class="text-gray-700">${item.date_reported}</p>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h3 class="font-semibold text-gray-900 mb-2">👤 Reporter</h3>
+              <p class="text-gray-700">${escapeHtml(item.reporter_name)}</p>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="font-semibold text-gray-900 mb-2">📞 Contact Information</h3>
+            <p class="text-gray-700">${escapeHtml(item.contact_info)}</p>
+          </div>
+        </div>
+      `;
+      
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('item-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function closeModalOnBackdrop(event) {
+      if (event.target.id === 'item-modal') {
+        closeModal();
+      }
+    }
+
+    function confirmStatusUpdate(item, newStatus) {
+      if (confirm(`Are you sure you want to mark this item as ${newStatus}?`)) {
+        updateItemStatus(item, newStatus);
+      }
+    }
+
+    function confirmDelete(item) {
+      if (confirm(`Are you sure you want to delete "${item.title}"? This action cannot be undone.`)) {
+        deleteItem(item);
+      }
+    }
+
+    // Settings Modal Functions
+    function openSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      const adminCreds = getAdminCredentials();
+      
+      // Pre-fill current username
+      document.getElementById('new-username').value = adminCreds.username;
+      
+      // Clear password fields
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+      
+      // Hide error
+      document.getElementById('settings-error').classList.add('hidden');
+      
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.getElementById('settings-form').reset();
+    }
+
+    function closeSettingsModalOnBackdrop(event) {
+      if (event.target.id === 'settings-modal') {
+        closeSettingsModal();
+      }
+    }
+
+    // Settings form handler
+    document.getElementById('settings-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const newUsername = document.getElementById('new-username').value.trim();
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      
+      const saveBtn = document.getElementById('save-settings-btn');
+      const saveText = document.getElementById('save-settings-text');
+      const saveSpinner = document.getElementById('save-settings-spinner');
+      const errorDiv = document.getElementById('settings-error');
+      
+      // Hide error
+      errorDiv.classList.add('hidden');
+      
+      // Validate
+      const adminCreds = getAdminCredentials();
+      
+      if (currentPassword !== adminCreds.password) {
+        errorDiv.textContent = 'Current password is incorrect';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      if (newPassword !== confirmPassword) {
+        errorDiv.textContent = 'New passwords do not match';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      if (newUsername.length < 3) {
+        errorDiv.textContent = 'Username must be at least 3 characters';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      if (newPassword.length < 6) {
+        errorDiv.textContent = 'Password must be at least 6 characters';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      // Show loading
+      saveBtn.disabled = true;
+      saveText.textContent = 'Saving...';
+      saveSpinner.classList.remove('hidden');
+      
+      // Simulate save delay
+      setTimeout(() => {
+        // Save new credentials
+        saveAdminCredentials(newUsername, newPassword);
+        
+        // Update session username
+        sessionStorage.setItem('adminUsername', newUsername);
+        document.getElementById('admin-user').textContent = newUsername;
+        
+        // Reset button
+        saveBtn.disabled = false;
+        saveText.textContent = 'Save Changes';
+        saveSpinner.classList.add('hidden');
+        
+        // Close modal and show success
+        closeSettingsModal();
+        showMessage('Settings updated successfully! Please use new credentials on next login.', 'success');
+      }, 1000);
+    });
+
+    // Export functionality
+    function exportDataAsCSV() {
+      if (filteredData.length === 0) {
+        showMessage('No data to export', 'error');
+        return;
+      }
+      
+      const headers = ['ID', 'Type', 'Title', 'Description', 'Category', 'Location', 'Reporter Name', 'Contact Info', 'Status', 'Date Reported'];
+      const rows = filteredData.map(item => [
+        item.id,
+        item.type,
+        item.title,
+        item.description,
+        item.category,
+        item.location,
+        item.reporter_name,
+        item.contact_info,
+        item.status,
+        item.date_reported
+      ]);
+      
+      let csv = headers.join(',') + '\n';
+      rows.forEach(row => {
+        csv += row.map(field => `"${field}"`).join(',') + '\n';
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lost-found-items-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      showMessage('Data exported successfully!', 'success');
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', checkAuth);
+  </script>
+</body>
+</html>
